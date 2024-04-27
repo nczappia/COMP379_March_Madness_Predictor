@@ -12,11 +12,54 @@ kenpom = pd.read_csv('data/KenPom Barttorvik.csv')
 preseason = pd.read_csv('data/Preseason Votes.csv')
 team = pd.read_csv('data/Team Results.csv')
 matchups = pd.read_csv('data/Tournament Matchups.csv')
+_538_ratings = pd.read_csv('data/538 Ratings.csv')
+Bartowick_Away_Neutral = pd.read_csv('data/Barttorvik Away-Neutral.csv')
+Bartowick_Away = pd.read_csv('data/Barttorvik Away.csv')
+Bartowick_Home = pd.read_csv('data/Barttorvik Home.csv')
+Bartowick_Neutral = pd.read_csv('data/Barttorvik Neutral.csv')
+Coach_Result = pd.read_csv('data/Coach Results.csv')
+Conference_Result = pd.read_csv('data/Conference Results.csv')
+Conference_Stats_Away_Neutral = pd.read_csv('data/Conference Stats Away Neutral.csv')
+Conference_Stats_Away = pd.read_csv('data/Conference Stats Away.csv')   
+Conference_Stats_Home = pd.read_csv('data/Conference Stats Home.csv')
+Conference_Stats_Neutral = pd.read_csv('data/Conference Stats Neutral.csv')
+Conference_Stats = pd.read_csv('data/Conference Stats.csv')
+Heat_Check_Tournament_Indes = pd.read_csv('data/Heat Check Tournament Index.csv')
+Public_Picks = pd.read_csv('data/Public Picks.csv')
+Resumes = pd.read_csv('data/Resumes.csv')
+Seed_Results = pd.read_csv('data/Seed Results.csv')
+Shooting_Splits = pd.read_csv('data/Shooting Splits.csv')
+Tournament_Locations = pd.read_csv('data/Tournament Locations.csv')
+Tournament_Simulation = pd.read_csv('data/Tournament Simulation.csv')
+Upset_Count = pd.read_csv('data/Upset Count.csv')
+Upset_Seed_Info = pd.read_csv('data/Upset Seed Info.csv')
+
+
 
 # Merge datasets
 first_merged_df = pd.merge(kenpom, preseason, on=['TEAM', 'YEAR'], how='left')
 second_merged_df = pd.merge(first_merged_df, team, on='TEAM', how='left')
-final_merged_df = pd.merge(second_merged_df, matchups, on=['TEAM', 'YEAR'], how='right')
+third_merged_df = pd.merge(second_merged_df, matchups, on=['TEAM', 'YEAR'], how='right')
+
+fourth_merged_df = pd.merge(third_merged_df, _538_ratings, on=['TEAM', 'YEAR'], how='left', suffixes=('_kenpom', '_538'))
+fifth_merged_df = pd.merge(fourth_merged_df, Bartowick_Away_Neutral, on=['TEAM', 'YEAR'], how='left', suffixes=('_538', '_away_neutral'))
+sixth_merged_df = pd.merge(fifth_merged_df, Bartowick_Away, on=['TEAM', 'YEAR'], how='left', suffixes=('_away_neutral', '_away'))
+seventh_merged_df = pd.merge(sixth_merged_df, Bartowick_Home, on=['TEAM', 'YEAR'], how='left', suffixes=('_away', '_home'))
+eighth_merged_df = pd.merge(seventh_merged_df, Bartowick_Neutral, on=['TEAM', 'YEAR'], how='left', suffixes=('_home', '_neutral'))
+ninth_merged_df = eighth_merged_df
+tenth_merged_df = eighth_merged_df
+eleventh_merged_df = eighth_merged_df 
+twelfth_merged_df = eighth_merged_df
+thirteenth_merged_df = eighth_merged_df
+fourteenth_merged_df = eighth_merged_df
+fifteenth_merged_df = eighth_merged_df
+sixteenth_merged_df = pd.merge(fifteenth_merged_df, Heat_Check_Tournament_Indes, on=['TEAM', 'YEAR'], how='left')
+seventeenth_merged_df = pd.merge(sixteenth_merged_df, Public_Picks, on=['TEAM', 'YEAR'], how='left', suffixes=('_TEAM_NO_x','_'))
+eighteenth_merged_df = pd.merge(seventeenth_merged_df, Resumes, on=['TEAM', 'YEAR'], how='left', suffixes=('ROUND_x', 'SEED_y'))
+nineteenth_merged_df = eighteenth_merged_df
+twentieth_merged_df = pd.merge(nineteenth_merged_df, Shooting_Splits, on=['TEAM', 'YEAR'], how='left', suffixes=('TEAM NO_x', '_'))
+twentyfirst_merged_df = twentieth_merged_df
+final_merged_df = twentieth_merged_df
 
 # Extract features and target variable from the merged dataframe
 X = final_merged_df.drop(columns=['TEAM', 'YEAR', 'WIN%_y'])  # Features
@@ -48,15 +91,23 @@ model = sm.OLS(y, X)
 result = model.fit()
 selected_features = result.summary().tables[1]
 
+significant_variables = []
+for row in selected_features.data[1:]:
+    # Extract the p-value from the row
+    p_value = float(row[-1])
+    
+    
+    if p_value < 0.05:
+        significant_variables.append(row[0])
+
+print("Variables with p-value less than 0.05:", significant_variables)
 print(selected_features)
 
 # Create a DataFrame for selected features
 new_features = pd.DataFrame(selected_features.data[1:], columns=selected_features.data[0])
 
 # Select the updated features based on significant features
-X_updated = X[['TEAM ID_x', 'ROUND_x', 'K TEMPO RANK', 'BARTHAG', 'GAMES_x', 'W_x', 'WIN%_x', 
-               'BADJ EM', 'BADJ D', 'AVG HGT', 'EFF HGT', 'WAB', 'ELITE SOS', 'SEED_y', 
-               'ROUND_y', 'AP VOTES', 'AP RANK', 'R64', 'R32', 'S16', 'F4', 'F2', 'CHAMP']]
+X_updated = X[significant_variables]
 
 # Split data into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X_updated, y, test_size=0.2, random_state=42)
