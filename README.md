@@ -7,13 +7,13 @@ The project aims to utilize machine learning techniques to predict the outcome o
 
 ## Formal Problem Definition 
 
-**Task (T):** Predict the winning percentage of March Madness teams 
+- **Task (T):** Predict the winning percentage of March Madness teams 
 
-**Experience (E):** Data from March Madness seasons 2002-2019 
+- **Experience (E):** Data from March Madness seasons 2002-2019
 
-https://www.kaggle.com/datasets/nishaanamin/march-madness-data 
+  https://www.kaggle.com/datasets/nishaanamin/march-madness-data 
 
-**Performance (P):** Accuracy in predicting a team’s winning percentage 
+- **Performance (P):** Accuracy in predicting a team’s winning percentage 
 
 ## Metrics 
 
